@@ -1,0 +1,113 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+import Button from "../components/Button";
+import Input from "../components/input";
+
+const Signup = () => {
+    const navigate = useNavigate();
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError("");
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+
+        // Demo only: connect your backend registration API here.
+        console.log({ name, email, password });
+
+        alert("Signup form submitted!");
+    };
+
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+                <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        Create account
+                    </h1>
+                    <p className="mt-2 text-gray-500">
+                        Get started by creating your account
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <Input
+                        id="name"
+                        label="Full name"
+                        type="text"
+                        placeholder="Enter your name"
+                        autoComplete="name"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+
+                    <Input
+                        id="signup-email"
+                        label="Email address"
+                        type="email"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+
+                    <Input
+                        id="signup-password"
+                        label="Password"
+                        type="password"
+                        placeholder="Create a password"
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    <Input
+                        id="confirm-password"
+                        label="Confirm password"
+                        type="password"
+                        placeholder="Re-enter your password"
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+
+                    {error && (
+                        <p role="alert" className="text-sm text-red-600">
+                            {error}
+                        </p>
+                    )}
+
+                    <Button type="submit">Create account</Button>
+                </form>
+
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    Already have an account?{" "}
+                    <Link
+                        to="/"
+                        className="font-semibold text-blue-600 hover:underline"
+                    >
+                        Sign in
+                    </Link>
+                </p>
+            </div>
+        </div>
+    );
+};
+
+export default Signup;
