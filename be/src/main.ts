@@ -1,7 +1,7 @@
-
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import authRoutes from "./modules/auth/auth.routes.ts";
+import authRoutes from "./modules/auth/auth.routes";
 
 const app = express();
 
@@ -13,5 +13,11 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on portas ${process.env.PORT} ${PORT}`);
+});
 
 export default app;

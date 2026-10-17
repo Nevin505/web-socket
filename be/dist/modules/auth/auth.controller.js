@@ -1,7 +1,10 @@
-import { signupSchema, signinSchema, } from "./auth.schema";
-import { signupUser, signinUser, } from "./auth.service";
-export const signup = async (req, res) => {
-    const parsed = signupSchema.safeParse(req.body);
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.signin = exports.signup = void 0;
+const auth_schema_1 = require("./auth.schema");
+const auth_service_1 = require("./auth.service");
+const signup = async (req, res) => {
+    const parsed = auth_schema_1.signupSchema.safeParse(req.body);
     if (!parsed.success) {
         res.status(400).json({
             message: "Validation failed",
@@ -10,7 +13,7 @@ export const signup = async (req, res) => {
         return;
     }
     try {
-        const user = await signupUser(parsed.data);
+        const user = await (0, auth_service_1.signupUser)(parsed.data);
         res.status(201).json({
             message: "Signup successful",
             user,
@@ -21,12 +24,13 @@ export const signup = async (req, res) => {
             res.status(409).json({ message: "Email already registered" });
             return;
         }
-        console.error(error);
+        console.error("Signup error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
-export const signin = async (req, res) => {
-    const parsed = signinSchema.safeParse(req.body);
+exports.signup = signup;
+const signin = async (req, res) => {
+    const parsed = auth_schema_1.signinSchema.safeParse(req.body);
     if (!parsed.success) {
         res.status(400).json({
             message: "Validation failed",
@@ -35,7 +39,7 @@ export const signin = async (req, res) => {
         return;
     }
     try {
-        const result = await signinUser(parsed.data);
+        const result = await (0, auth_service_1.signinUser)(parsed.data);
         res.status(200).json({
             message: "Signin successful",
             ...result,
@@ -49,8 +53,8 @@ export const signin = async (req, res) => {
             });
             return;
         }
-        console.error(error);
+        console.error("Signin error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
-//# sourceMappingURL=auth.controller.js.map
+exports.signin = signin;

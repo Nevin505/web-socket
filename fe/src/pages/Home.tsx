@@ -2,20 +2,35 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/input";
 import { useState } from "react";
+import { signin } from "../api/auth";
+import axios from "axios";
 
 const Home = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // Demo only: connect your backend authentication API here.
-    console.log({ email, password });
-
-    alert("Login form submitted!");
+    try {
+      const data = await signin({ email, password });
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard"); // redirect after login
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Login failed. Try again.");
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,17 +66,15 @@ const Home = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <div className="text-right">
-            <button
-              type="button"
-              className="text-sm font-medium text-blue-600 hover:underline"
-              onClick={() => alert("Connect your password reset flow here.")}
-            >
-              Forgot password?
-            </button>
-          </div>
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
 
-          <Button type="submit">Sign in</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+          </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
@@ -78,6 +91,4 @@ const Home = () => {
   );
 };
 
-export default Home
-
-
+export default Home;

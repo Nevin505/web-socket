@@ -1,11 +1,13 @@
-import { z } from "zod";
-export const signupSchema = z.object({
-    name: z.string().trim().min(2, "Name must be at least 2 characters"),
-    email: z.string().trim().email("Invalid email").transform((value) => value.toLowerCase()),
-    password: z.string().min(8, "Password must be at least 8 characters").max(72),
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.signinSchema = exports.signupSchema = void 0;
+const zod_1 = require("zod");
+exports.signupSchema = zod_1.z.object({
+    name: zod_1.z.string().trim().min(2, "Name must be at least 2 characters"),
+    email: zod_1.z.string().trim().email("Invalid email").transform((value) => value.toLowerCase()),
+    password: zod_1.z.string().min(8, "Password must be at least 8 characters").max(72),
 });
-export const signinSchema = z.object({
-    email: z.string().trim().email("Invalid email").transform((value) => value.toLowerCase()),
-    password: z.string().min(1, "Password is required").max(72),
+exports.signinSchema = zod_1.z.object({
+    email: zod_1.z.string().trim().email("Invalid email").transform((value) => value.toLowerCase()),
+    password: zod_1.z.string().min(1, "Password is required").max(72),
 });
-//# sourceMappingURL=auth.schema.js.map

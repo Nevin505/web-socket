@@ -2,7 +2,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../../config/prisma";
-import type { SignupInput, SigninInput } from "./auth.schema.ts";
+import type { SignupInput, SigninInput } from "./auth.schema";
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;

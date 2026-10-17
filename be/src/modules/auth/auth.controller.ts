@@ -33,7 +33,7 @@ export const signup: RequestHandler = async (req, res) => {
       return;
     }
 
-    console.error(error);
+    console.error("Signup error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -66,8 +66,7 @@ export const signin: RequestHandler = async (req, res) => {
       });
       return;
     }
-
-    console.error(error);
+    console.error("Signin error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

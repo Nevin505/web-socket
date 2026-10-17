@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-
 import Button from "../components/Button";
 import Input from "../components/input";
+import { signup } from "../api/auth";
+import axios from "axios";
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -12,8 +13,9 @@ const Signup = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
 
@@ -22,10 +24,20 @@ const Signup = () => {
             return;
         }
 
-        // Demo only: connect your backend registration API here.
-        console.log({ name, email, password });
+        setLoading(true);
 
-        alert("Signup form submitted!");
+        try {
+            await signup({ name, email, password });
+            navigate("/"); // go to login after successful signup
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message ?? "Signup failed. Try again.");
+            } else {
+                setError("An unexpected error occurred.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -93,7 +105,9 @@ const Signup = () => {
                         </p>
                     )}
 
-                    <Button type="submit">Create account</Button>
+                    <Button type="submit" disabled={loading}>
+                        {loading ? "Creating account..." : "Create account"}
+                    </Button>
                 </form>
 
                 <p className="mt-6 text-center text-sm text-gray-600">
