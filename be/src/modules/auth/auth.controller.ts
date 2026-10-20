@@ -51,7 +51,7 @@ export const signin: RequestHandler = async (req, res) => {
 
   try {
     const result = await signinUser(parsed.data);
-
+    console.log("the resuklt", result)
     res.status(200).json({
       message: "Signin successful",
       ...result,

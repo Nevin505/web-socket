@@ -1,17 +1,20 @@
 import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { prisma } from "../lib/prisma";
+import prisma from "../../config/prisma";
 
-const updateSchema = z.object({
-  name: z.string().trim().min(2, "Name must be at least 2 characters").max(50),
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(50).optional(),
   username: z
     .string()
     .trim()
     .toLowerCase()
     .min(3, "Username must be at least 3 characters")
     .max(20)
-    .regex(/^[a-z0-9_]+$/, "Only letters, numbers and underscores"),
+    .regex(/^[a-z0-9_]+$/, "Only letters, numbers and underscores")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   bio: z.string().trim().max(200, "Bio can be at most 200 characters").optional().default(""),
   phone: z
     .string()
@@ -21,6 +24,9 @@ const updateSchema = z.object({
     .optional()
     .default(""),
 });
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
 
 // Never return the password hash
 const profileSelect = {
@@ -34,7 +40,7 @@ const profileSelect = {
 
 export const getProfile = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({
-    where: { id: req.userId },
+    where: { id: req.user.id },
     select: profileSelect,
   });
   if (!user) return res.status(404).json({ message: "User not found" });
@@ -42,7 +48,7 @@ export const getProfile = async (req: Request, res: Response) => {
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
-  const parsed = updateSchema.safeParse(req.body);
+  const parsed = updateProfileSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({
       message: "Validation failed",
@@ -52,7 +58,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
   try {
     const user = await prisma.user.update({
-      where: { id: req.userId },
+      where: { id: req.user.id },
       data: parsed.data,
       select: profileSelect,
     });

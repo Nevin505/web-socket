@@ -29,11 +29,13 @@ export interface SigninResponse {
 }
 
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-  const { data } = await api.post<SignupResponse>("/auth/signup", payload);
+  const { data } = await api.post<SignupResponse>("/api/auth/signup", payload);
   return data;
 }
 
 export async function signin(payload: SigninPayload): Promise<SigninResponse> {
-  const { data } = await api.post<SigninResponse>("/auth/login", payload);
+  const { data } = await api.post<SigninResponse>("/api/auth/login", payload);
+  console.log("the toekn", data.token);
+  console.log("the user", data.user)
   return data;
 }

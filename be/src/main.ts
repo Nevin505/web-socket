@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import authRoutes from "./modules/auth/auth.routes";
+import profileRouter from "./modules/profile/profile.route";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use('/profile',profileRouter)
 
 const PORT = process.env.PORT || 4000;
 

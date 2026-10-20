@@ -2,11 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/input";
 import { useState } from "react";
-import { signin } from "../api/auth";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+
 
 const Home = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,9 +21,8 @@ const Home = () => {
     setLoading(true);
 
     try {
-      const data = await signin({ email, password });
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard"); // redirect after login
+      await login(email, password);
+      navigate("/chat"); // redirect after login
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message ?? "Login failed. Try again.");
