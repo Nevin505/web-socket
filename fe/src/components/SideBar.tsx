@@ -149,7 +149,7 @@ const Sidebar = ({
               <ChatBubbleIcon className="h-6 w-6" />
             </div>
             <p className="text-sm font-semibold text-gray-700">No chats found</p>
-            {filter === "groups" && onCreateGroup && (
+            {onCreateGroup && (
               <button
                 type="button"
                 onClick={onCreateGroup}

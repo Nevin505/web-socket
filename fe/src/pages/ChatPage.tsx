@@ -9,29 +9,17 @@ import { getMyGroupsApi } from "../api/group";
 import type { Conversation, Message } from "../types/chat";
 import type { Group } from "../types/group";
 
-// Initial mock direct conversations
-const INITIAL_DIRECT_CONVERSATIONS: Conversation[] = [
-  { id: "d1", name: "Aarav Sharma", lastMessage: "See you tomorrow!", time: "10:24", unread: 2 },
-  { id: "d2", name: "Priya Nair", lastMessage: "Sent the files", time: "Yesterday", unread: 0 },
-];
-
-const INITIAL_MESSAGES: Record<string, Message[]> = {
-  d1: [
-    { id: "m1", senderId: "other", text: "Hey! Are we still meeting?", createdAt: new Date().toISOString() },
-    { id: "m2", senderId: "me", text: "Yes, 5 pm works for me.", createdAt: new Date().toISOString() },
-    { id: "m3", senderId: "other", text: "See you tomorrow!", createdAt: new Date().toISOString() },
-  ],
-  d2: [],
-};
-
 const ChatPage = () => {
+
+
   const { user } = useAuth();
   const currentUserId = user?.id || "me";
   const currentUserName = user?.name || "Me";
 
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Record<string, Message[]>>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [groups, setGroups] = useState<Group[]>([]);
+  const [ws, setWs] = useState<WebSocket | null>(null);
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -69,22 +57,29 @@ const ChatPage = () => {
     }));
   }, [groups]);
 
-  // Combine direct conversations and groups
-  const allConversations = useMemo(() => {
-    return [...groupConversations, ...INITIAL_DIRECT_CONVERSATIONS];
-  }, [groupConversations]);
+  const allConversations = groupConversations;
 
   const activeConversation = allConversations.find((c) => c.id === activeId) ?? null;
 
   const handleSend = (text: string) => {
     if (!activeId) return;
+    const messageId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
     const newMessage: Message = {
-      id: crypto.randomUUID(),
-      senderId: currentUserId,
-      text,
-      createdAt: new Date().toISOString(),
+      id: messageId,
+      sentBy: currentUserId,
+      content: text,
+      createdAt,
     };
     setMessages((prev) => ({ ...prev, [activeId]: [...(prev[activeId] ?? []), newMessage] }));
+    sendWebSocketEvents({
+      type: 'broadcast',
+      message: text,
+      groupId: activeId,
+      sentBy: currentUserId,
+      id: messageId,
+      createdAt,
+    });
   };
 
   const handleGroupCreated = (newGroup: Group, shouldOpenInvite?: boolean) => {
@@ -121,13 +116,125 @@ const ChatPage = () => {
     setActiveId(groupId);
   };
 
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8080");
+    setWs(ws);
+    ws.onopen = () => {
+      console.log("Connected to server");
+    };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'broadcast' && data.groupId && data.content) {
+          const incomingMessage: Message = {
+            id: data.id || crypto.randomUUID(),
+            sentBy: data.sentBy,
+            content: data.content,
+            createdAt: data.createdAt || new Date().toISOString(),
+          };
+          setMessages((prev) => {
+            const currentMsgs = prev[data.groupId] || [];
+            if (incomingMessage.id && currentMsgs.some((m) => m.id === incomingMessage.id)) {
+              return prev;
+            }
+            return {
+              ...prev,
+              [data.groupId]: [...currentMsgs, incomingMessage],
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Failed to parse incoming WS message", err);
+      }
+    };
+    ws.onclose = () => {
+      console.log("Disconnected from server");
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const sendWebSocketEvents = ({
+    type,
+    groupId,
+    sentBy,
+    message,
+    id,
+    createdAt,
+  }: {
+    type: 'join' | 'broadcast' | 'leave';
+    message?: string;
+    groupId: string;
+    sentBy: string;
+    id?: string;
+    createdAt?: string;
+  }) => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    let data = {};
+    if (type === 'join') {
+      data = { type, groupId, sentBy };
+    } else if (type === 'leave') {
+      data = { type, groupId, sentBy };
+    } else {
+      data = {
+        type: 'broadcast',
+        id: id || crypto.randomUUID(),
+        content: message,
+        groupId,
+        sentBy,
+        createdAt: createdAt || new Date().toISOString(),
+      };
+    }
+    ws.send(JSON.stringify(data));
+  };
+
+  const sendMessage = ({
+    message,
+    groupId,
+    sentBy,
+  }: {
+    type?: string;
+    message: string;
+    groupId: string;
+    sentBy: string;
+  }) => {
+    if (!groupId) return;
+    const messageId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const newMessage: Message = {
+      id: messageId,
+      sentBy,
+      content: message,
+      createdAt,
+    };
+    setMessages((prev) => ({ ...prev, [groupId]: [...(prev[groupId] ?? []), newMessage] }));
+    sendWebSocketEvents({
+      type: 'broadcast',
+      message,
+      groupId,
+      sentBy,
+      id: messageId,
+      createdAt,
+    });
+  };
+
+  const joinGroup = (id: string) => {
+    if (activeId && activeId !== id) {
+      sendWebSocketEvents({ type: 'leave', groupId: activeId, sentBy: currentUserId });
+    }
+    setActiveId(id);
+    sendWebSocketEvents({ type: 'join', groupId: id, sentBy: currentUserId });
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-white">
       {/* Sidebar with Group Actions */}
       <Sidebar
         conversations={allConversations}
         activeId={activeId}
-        onSelect={setActiveId}
+        onSelect={joinGroup}
         userName={currentUserName}
         onCreateGroup={() => setIsCreateOpen(true)}
         onJoinGroup={() => setIsJoinOpen(true)}
@@ -142,6 +249,7 @@ const ChatPage = () => {
         onSend={handleSend}
         onBack={() => setActiveId(null)}
         onInvite={handleOpenInvite}
+        onSendMessage={sendMessage}
         className={activeId ? "flex" : "hidden md:flex"}
       />
 

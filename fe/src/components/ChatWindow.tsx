@@ -11,10 +11,14 @@ interface ChatWindowProps {
   onBack: () => void;
   onInvite?: () => void;
   className?: string;
+  onSendMessage: ({ type, message, groupId, sentBy }: { type: string; message: string; groupId: string, sentBy: string }) => void;
 }
 
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const formatTime = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
 
 const ChatWindow = ({
   conversation,
@@ -23,11 +27,12 @@ const ChatWindow = ({
   onSend,
   onBack,
   onInvite,
+  onSendMessage,
   className = "",
 }: ChatWindowProps) => {
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
-
+  console.log("conversation", conversation)
   // scroll to the newest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,7 +58,16 @@ const ChatWindow = ({
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
-    onSend(trimmed);
+    if (onSendMessage && conversation) {
+      onSendMessage({
+        type: 'broadcast',
+        message: trimmed,
+        groupId: conversation.id,
+        sentBy: currentUserId,
+      });
+    } else {
+      onSend(trimmed);
+    }
     setText("");
   };
 
@@ -86,15 +100,14 @@ const ChatWindow = ({
               </h2>
               {conversation.isGroup && (
                 <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
-                  Group
+                  Groups
                 </span>
               )}
             </div>
             <p className="truncate text-xs text-gray-500">
               {conversation.isGroup
-                ? `${conversation.memberCount || 1} members ${
-                    conversation.maxMembers ? `• Limit ${conversation.maxMembers}` : ""
-                  }`
+                ? `${conversation.memberCount || 1} members ${conversation.maxMembers ? `• Limit ${conversation.maxMembers}` : ""
+                }`
                 : "Active now"}
             </p>
           </div>
@@ -131,24 +144,22 @@ const ChatWindow = ({
           </div>
         )}
 
-        {messages.map((m) => {
-          const mine = m.senderId === currentUserId;
+        {messages.filter(Boolean).map((m) => {
+          const mine = m?.sentBy === currentUserId;
           return (
-            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+            <div key={m?.id || `${m?.sentBy}-${m?.createdAt}-${Math.random()}`} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all ${
-                  mine
-                    ? "rounded-br-sm bg-blue-600 text-white"
-                    : "rounded-bl-sm bg-white text-gray-900 border border-gray-100"
-                }`}
-              >
-                <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                <span
-                  className={`mt-1 block text-right text-[10px] font-medium ${
-                    mine ? "text-blue-100" : "text-gray-400"
+                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all ${mine
+                  ? "rounded-br-sm bg-blue-600 text-white"
+                  : "rounded-bl-sm bg-white text-gray-900 border border-gray-100"
                   }`}
+              >
+                <p className="whitespace-pre-wrap break-words">{m?.content}</p>
+                <span
+                  className={`mt-1 block text-right text-[10px] font-medium ${mine ? "text-blue-100" : "text-gray-400"
+                    }`}
                 >
-                  {formatTime(m.createdAt)}
+                  {formatTime(m?.createdAt)}
                 </span>
               </div>
             </div>
