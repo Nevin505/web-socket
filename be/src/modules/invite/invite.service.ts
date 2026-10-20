@@ -74,17 +74,26 @@ export async function acceptInvitation(
             throw new Error("Invitation expired or has already been used");
         }
 
-        await tx.groupMember.upsert({
+        const group = await tx.group.findUnique({
+            where: { id: invitation.groupId },
+            select: { conversationId: true },
+        });
+
+        if (!group) {
+            throw new Error("Associated group not found");
+        }
+
+        await tx.conversationMember.upsert({
             where: {
-                groupId_userId: {
-                    groupId: invitation.groupId,
+                conversationId_userId: {
+                    conversationId: group.conversationId,
                     userId,
                 },
             },
             create: {
-                groupId: invitation.groupId,
+                conversationId: group.conversationId,
                 userId,
-                role: "MEMBER",
+                role: GroupRole.MEMBER,
             },
             update: {},
         });
@@ -109,11 +118,20 @@ export async function inviteToGroup(
         throw new Error("Invalid email address");
     }
 
+    const group = await prisma.group.findUnique({
+        where: { id: groupId },
+        select: { conversationId: true },
+    });
+
+    if (!group) {
+        throw new Error("Group not found");
+    }
+
     // Only group owners and admins can invite.
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.conversationMember.findUnique({
         where: {
-            groupId_userId: {
-                groupId,
+            conversationId_userId: {
+                conversationId: group.conversationId,
                 userId: inviterId,
             },
         },
@@ -134,10 +152,10 @@ export async function inviteToGroup(
     });
 
     if (existingUser) {
-        const existingMembership = await prisma.groupMember.findUnique({
+        const existingMembership = await prisma.conversationMember.findUnique({
             where: {
-                groupId_userId: {
-                    groupId,
+                conversationId_userId: {
+                    conversationId: group.conversationId,
                     userId: existingUser.id,
                 },
             },

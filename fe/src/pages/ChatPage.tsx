@@ -6,6 +6,7 @@ import CreateGroupModal from "../components/CreateGroupModal";
 import InviteModal from "../components/InviteModal";
 import JoinGroupModal from "../components/JoinGroupModal";
 import { getMyGroupsApi } from "../api/group";
+import { getConversationMessagesApi } from "../api/message";
 import type { Conversation, Message } from "../types/chat";
 import type { Group } from "../types/group";
 
@@ -40,6 +41,27 @@ const ChatPage = () => {
   useEffect(() => {
     fetchGroups();
   }, [fetchGroups]);
+
+  // Load message history from DB when active conversation changes
+  useEffect(() => {
+    if (!activeId) return;
+    let isMounted = true;
+    getConversationMessagesApi(activeId).then((fetchedMessages) => {
+      if (!isMounted || !fetchedMessages.length) return;
+      setMessages((prev) => {
+        const existing = prev[activeId] || [];
+        const existingIds = new Set(existing.map((m) => m.id));
+        const newFetched = fetchedMessages.filter((m) => !existingIds.has(m.id));
+        return {
+          ...prev,
+          [activeId]: [...newFetched, ...existing],
+        };
+      });
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [activeId]);
 
   // Transform groups into conversations
   const groupConversations: Conversation[] = useMemo(() => {

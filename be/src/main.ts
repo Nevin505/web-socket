@@ -5,6 +5,8 @@ import authRoutes from "./modules/auth/auth.routes";
 import profileRouter from "./modules/profile/profile.route";
 import groupRouter from "./modules/group/group.route";
 import inviteRouter from "./modules/invite/invite.route";
+import messageRouter from "./modules/message/message.route";
+import { saveMessage } from "./modules/message/message.service";
 import { WebSocketServer, WebSocket } from 'ws'
 import http from 'http'
 const app = express();
@@ -25,6 +27,8 @@ app.use("/api/groups", groupRouter);
 app.use("/groups", groupRouter);
 app.use("/api/invite", inviteRouter);
 app.use("/invite", inviteRouter);
+app.use("/api/messages", messageRouter);
+app.use("/messages", messageRouter);
 
 
 const webSocketServer = new WebSocketServer({ server: httpServer });
@@ -50,7 +54,7 @@ const leaveRoom = (groupId: string, ws: WebSocket) => {
 
 
 }
-const broadcast = (groupId: string, payload: JSON) => {
+const broadcast = (groupId: string, payload: any) => {
   const ws = rooms.get(groupId);
   console.log("groupId", ws)
   if (ws) {
@@ -65,17 +69,44 @@ const broadcast = (groupId: string, payload: JSON) => {
 }
 webSocketServer.on("connection", (ws: WebSocket) => {
   console.log("User connected");
-  ws.on("message", (message: { type: 'join' | 'broadcast' | 'leave', groupId: string, sentBy: string, message: string }) => {
+  ws.on("message", async (message: { type: 'join' | 'broadcast' | 'leave', groupId: string, sentBy: string, message: string }) => {
     console.log("Received message:", message);
-    const data = JSON.parse(message.toString());
-    console.log("the messafge recived", data)
-    const userId = data.userId;
-    if (data.type === "broadcast") {
-      broadcast(data.groupId, data);
-    } else if (data.type === 'join') {
-      joinRoom(ws, data.groupId);
-    } else if (data.type === 'leave') {
-      leaveRoom(data.groupId, ws);
+    try {
+      const data = JSON.parse(message.toString());
+      console.log("the messafge recived", data)
+      const userId = data.userId;
+      if (data.type === "broadcast") {
+        try {
+          const savedMessage = await saveMessage({
+            content: data.content,
+            conversationId: data.groupId,
+            sentById: data.sentBy,
+            clientMsgId: data.id || data.clientMsgId,
+          });
+
+          broadcast(data.groupId, {
+            type: "broadcast",
+            id: savedMessage.id,
+            clientMsgId: savedMessage.clientMsgId,
+            content: savedMessage.content,
+            groupId: data.groupId,
+            conversationId: savedMessage.conversationId,
+            sentBy: savedMessage.sentById,
+            senderName: savedMessage.sentByUser?.name,
+            createdAt: savedMessage.createdAt.toISOString(),
+          });
+        } catch (dbErr: any) {
+          console.error("Database saveMessage error:", dbErr.message);
+          // Fallback to broadcasting in-memory message so client remains responsive
+          broadcast(data.groupId, data);
+        }
+      } else if (data.type === 'join') {
+        joinRoom(ws, data.groupId);
+      } else if (data.type === 'leave') {
+        leaveRoom(data.groupId, ws);
+      }
+    } catch (parseErr) {
+      console.error("Failed to parse websocket message:", parseErr);
     }
   });
   ws.on('close', () => {
