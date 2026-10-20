@@ -3,11 +3,11 @@ import { acceptInvitation, inviteToGroup } from "./invite.service";
 
 export const generateInviteCode = async (req: Request, res: Response) => {
     try {
-        const { groupId, email } = req.body;
+        const { groupId, email, sendEmail } = req.body;
         if (!groupId || !email) {
             return res.status(400).json({ message: "groupId and email are required" });
         }
-        const invitation = await inviteToGroup(groupId, req.user.id, email);
+        const invitation = await inviteToGroup(groupId, req.user.id, email, sendEmail);
         return res.status(201).json({ success: true, invitation });
     } catch (error: any) {
         return res.status(400).json({ message: error.message || "Failed to generate invite" });

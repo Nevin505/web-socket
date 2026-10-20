@@ -3,6 +3,7 @@ import api from "../lib/axios";
 export interface GenerateInviteInput {
   groupId: string;
   email: string;
+  sendEmail?: boolean;
 }
 
 export interface GeneratedInviteResponse {
@@ -13,6 +14,8 @@ export interface GeneratedInviteResponse {
   token: string;
   link: string;
   groupName?: string;
+  emailSent?: boolean;
+  emailPreviewUrl?: string;
 }
 
 export interface RedeemInviteResult {

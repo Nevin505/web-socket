@@ -49,7 +49,7 @@ export const InviteModal = ({
 
   const currentGroup = selectedGroup || (availableGroups.length > 0 ? availableGroups[0] : null);
 
-  const handleGenerateLink = async (targetEmail = "guest@invite.link") => {
+  const handleGenerateLink = async (targetEmail = "guest@invite.link", sendEmail = false) => {
     if (!currentGroup) {
       setError("Please select a group first");
       return;
@@ -62,6 +62,7 @@ export const InviteModal = ({
       const invite = await generateInviteApi({
         groupId: currentGroup.id,
         email: targetEmail,
+        sendEmail,
       });
       setInvitation(invite);
     } catch (err: any) {
@@ -82,7 +83,7 @@ export const InviteModal = ({
       setError("Please enter a valid email address");
       return;
     }
-    await handleGenerateLink(trimmed);
+    await handleGenerateLink(trimmed, true);
   };
 
   const copyToClipboard = async (text: string, type: "link" | "token") => {
@@ -342,10 +343,13 @@ export const InviteModal = ({
           </Button>
 
           {invitation && (
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                  ✓ Invite Created for {invitation.email}
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckIcon className="h-4 w-4 text-emerald-600" />
+                  {invitation.emailSent
+                    ? `Invitation email sent to ${invitation.email}!`
+                    : `Invite created for ${invitation.email}`}
                 </span>
                 <button
                   type="button"
@@ -355,6 +359,21 @@ export const InviteModal = ({
                   {copiedLink ? "✓ Copied!" : "Copy Link"}
                 </button>
               </div>
+
+              {invitation.emailPreviewUrl && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50/80 p-2.5 text-xs text-blue-800 flex items-center justify-between">
+                  <span>✉️ Dev Preview:</span>
+                  <a
+                    href={invitation.emailPreviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-blue-600 underline hover:text-blue-800"
+                  >
+                    Open Sent Email ↗
+                  </a>
+                </div>
+              )}
+
               <input
                 type="text"
                 readOnly

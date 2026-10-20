@@ -3,6 +3,7 @@
 import { GroupRole } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { createInvitationToken, hashInvitationToken } from "../../utils/invitation-token";
+import { sendGroupInvitationEmail } from "../email/email.service";
 
 export async function acceptInvitation(
     rawToken: string,
@@ -100,6 +101,7 @@ export async function inviteToGroup(
     groupId: string,
     inviterId: string,
     emailInput: string,
+    sendEmail?: boolean
 ) {
     const email = emailInput.trim().toLowerCase();
 
@@ -159,22 +161,51 @@ export async function inviteToGroup(
         data: { status: "REVOKED" },
     });
 
-    const invitation = await prisma.groupInvitation.create({
-        data: {
-            groupId,
-            email,
-            token: tokenHash,
-            userId: inviterId,
-            invitedById: inviterId,
-            expiresAt,
-        },
-        include: {
-            group: { select: { name: true } },
-        },
-    });
+    const [invitation, inviter] = await Promise.all([
+        prisma.groupInvitation.create({
+            data: {
+                groupId,
+                email,
+                token: tokenHash,
+                userId: inviterId,
+                invitedById: inviterId,
+                expiresAt,
+            },
+            include: {
+                group: { select: { name: true } },
+            },
+        }),
+        prisma.user.findUnique({
+            where: { id: inviterId },
+            select: { name: true, email: true },
+        }),
+    ]);
 
-    const frontendBase = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendBase =
+        process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173";
     const link = `${frontendBase}/invite/${encodeURIComponent(token)}`;
+    const inviterName = inviter?.name || inviter?.email || "A team member";
+
+    const shouldSendEmail =
+        sendEmail !== false &&
+        !email.endsWith("@invite.link") &&
+        !email.endsWith("@placeholder.internal");
+
+    let emailSent = false;
+    let emailPreviewUrl: string | undefined = undefined;
+
+    if (shouldSendEmail) {
+        const emailResult = await sendGroupInvitationEmail({
+            to: invitation.email,
+            inviterName,
+            groupName: invitation.group.name,
+            inviteLink: link,
+            token,
+            expiresAt: invitation.expiresAt,
+        });
+        emailSent = emailResult.success;
+        emailPreviewUrl = (emailResult.previewUrl as string) || undefined;
+    }
 
     return {
         id: invitation.id,
@@ -184,5 +215,7 @@ export async function inviteToGroup(
         token,
         link,
         groupName: invitation.group.name,
+        emailSent,
+        emailPreviewUrl,
     };
 }
