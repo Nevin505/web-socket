@@ -1,20 +1,19 @@
-
 import type { InputHTMLAttributes } from "react";
 
-type InputVariant =
+export type InputVariant =
   | "default"
   | "outlined"
   | "filled"
   | "error"
   | "success";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   variant?: InputVariant;
   errorMessage?: string;
 }
 
-const Input = ({
+export const Input = ({
   id,
   label,
   variant = "default",
@@ -23,23 +22,23 @@ const Input = ({
   ...props
 }: InputProps) => {
   const baseStyles =
-    "w-full rounded-md px-3 py-2 outline-none transition focus:ring-2";
+    "w-full rounded-xl px-3.5 py-2.5 outline-none transition-all text-sm focus:ring-2";
 
   const variants: Record<InputVariant, string> = {
     default:
-      "border border-gray-300 focus:border-blue-500 focus:ring-blue-100",
+      "border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-100",
     outlined:
-      "border-2 border-gray-500 focus:border-blue-600 focus:ring-blue-100",
+      "border-2 border-gray-500 bg-white text-gray-900 focus:border-blue-600 focus:ring-blue-100",
     filled:
-      "border border-transparent bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-blue-100",
+      "border border-transparent bg-gray-100 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-100",
     error:
-      "border border-red-500 focus:border-red-600 focus:ring-red-100",
+      "border border-red-500 bg-red-50/30 text-gray-900 focus:border-red-600 focus:ring-red-100",
     success:
-      "border border-green-500 focus:border-green-600 focus:ring-green-100",
+      "border border-emerald-500 bg-emerald-50/30 text-gray-900 focus:border-emerald-600 focus:ring-emerald-100",
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       {label && (
         <label
           htmlFor={id}
@@ -58,7 +57,7 @@ const Input = ({
       />
 
       {errorMessage && (
-        <p id={`${id}-error`} className="text-sm text-red-500">
+        <p id={`${id}-error`} className="text-xs text-red-500 mt-0.5">
           {errorMessage}
         </p>
       )}

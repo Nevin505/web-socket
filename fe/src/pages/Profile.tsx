@@ -1,11 +1,9 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Input from "../components/input";
-import Button from "../components/Button";
-import Avatar from "../components/Avatar";
 import { useAuth } from "../context/AuthContext";
 import { authMe, authUpdate, type ProfileUpdate } from "../api/profile";
+import { Avatar, Button, Input } from "../components/ui";
 
 
 const BIO_MAX = 200;
@@ -135,7 +133,7 @@ const ProfilePage = () => {
                             <div className="flex justify-between text-sm">
                                 <span className="text-red-500">{errors.bio?.[0]}</span>
                                 <span className="text-gray-400">
-                                    {form.bio.length}/{BIO_MAX}
+                                    {(form.bio ?? "").length}/{BIO_MAX}
                                 </span>
                             </div>
                         </div>

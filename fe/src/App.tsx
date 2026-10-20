@@ -4,6 +4,7 @@ import Signup from "./pages/SIgnup";
 import NotFound from "./pages/NotFound";
 import ChatPage from "./pages/ChatPage";
 import ProfilePage from "./pages/Profile";
+import AcceptInvitePage from "./pages/AcceptInvitePage";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Route path="/signup" element={<Signup />}></Route>
       <Route path="/chat" element={<ChatPage />}></Route>
       <Route path="/profile" element={<ProfilePage />}></Route>
+      <Route path="/invite/:token" element={<AcceptInvitePage />}></Route>
       <Route path="*" element={<NotFound />}></Route>
     </Routes>
   );
