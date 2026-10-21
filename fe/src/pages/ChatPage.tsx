@@ -51,7 +51,14 @@ const ChatPage = () => {
       setMessages((prev) => {
         const existing = prev[activeId] || [];
         const existingIds = new Set(existing.map((m) => m.id));
-        const newFetched = fetchedMessages.filter((m) => !existingIds.has(m.id));
+        existing.forEach((m) => {
+          if (m.clientMsgId) existingIds.add(m.clientMsgId);
+        });
+
+        const newFetched = fetchedMessages.filter(
+          (m) => !existingIds.has(m.id) && (!m.clientMsgId || !existingIds.has(m.clientMsgId))
+        );
+
         return {
           ...prev,
           [activeId]: [...newFetched, ...existing],
@@ -89,6 +96,7 @@ const ChatPage = () => {
     const createdAt = new Date().toISOString();
     const newMessage: Message = {
       id: messageId,
+      clientMsgId: messageId,
       sentBy: currentUserId,
       content: text,
       createdAt,
@@ -148,17 +156,34 @@ const ChatPage = () => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'broadcast' && data.groupId && data.content) {
+          const clientMsgId = data.clientMsgId;
           const incomingMessage: Message = {
             id: data.id || crypto.randomUUID(),
+            clientMsgId: clientMsgId,
             sentBy: data.sentBy,
             content: data.content,
             createdAt: data.createdAt || new Date().toISOString(),
           };
           setMessages((prev) => {
             const currentMsgs = prev[data.groupId] || [];
-            if (incomingMessage.id && currentMsgs.some((m) => m.id === incomingMessage.id)) {
-              return prev;
+
+            // Check if this message was already added (optimistically or previously)
+            const existingIndex = currentMsgs.findIndex(
+              (m) =>
+                (incomingMessage.id && m.id === incomingMessage.id) ||
+                (clientMsgId && (m.id === clientMsgId || m.clientMsgId === clientMsgId))
+            );
+
+            if (existingIndex !== -1) {
+              // Replace optimistic message with the confirmed server message
+              const updated = [...currentMsgs];
+              updated[existingIndex] = incomingMessage;
+              return {
+                ...prev,
+                [data.groupId]: updated,
+              };
             }
+
             return {
               ...prev,
               [data.groupId]: [...currentMsgs, incomingMessage],
@@ -227,6 +252,7 @@ const ChatPage = () => {
     const createdAt = new Date().toISOString();
     const newMessage: Message = {
       id: messageId,
+      clientMsgId: messageId,
       sentBy,
       content: message,
       createdAt,

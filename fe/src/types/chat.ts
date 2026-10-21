@@ -15,6 +15,7 @@ export interface Conversation {
 
 export interface Message {
   id: string;
+  clientMsgId?: string;
   sentBy: string;
   content: string;
   createdAt: string; // ISO string
