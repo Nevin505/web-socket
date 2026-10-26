@@ -1,22 +1,27 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button, Input } from "../components/ui";
 import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Home = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { email?: string; successMessage?: string } | null;
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(locationState?.email || "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(locationState?.successMessage || "");
   const [loading, setLoading] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
@@ -43,6 +48,12 @@ const Home = () => {
           </p>
         </div>
 
+        {success && (
+          <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-800">
+            {success}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             id="email"
@@ -55,16 +66,44 @@ const Home = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Input
-            id="password"
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              endIcon={
+                isPasswordVisible ? (
+                  <FaEyeSlash
+                    onClick={() => setIsPasswordVisible(false)}
+                    className="cursor-pointer"
+                  />
+                ) : (
+                  <FaEye
+                    onClick={() => setIsPasswordVisible(true)}
+                    className="cursor-pointer"
+                  />
+                )
+              }
+              id="password"
+              type={isPasswordVisible ? "text" : "password"}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
           {error && (
             <p role="alert" className="text-sm text-red-600">

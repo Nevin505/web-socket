@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactElement } from "react";
 
 export type InputVariant =
   | "default"
@@ -11,13 +11,17 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   variant?: InputVariant;
   errorMessage?: string;
+  startIcon?: ReactElement;
+  endIcon?: ReactElement;
 }
 
 export const Input = ({
   id,
   label,
-  variant = "default",
   errorMessage,
+  startIcon, endIcon,
+  variant = "default",
+
   className = "",
   ...props
 }: InputProps) => {
@@ -48,14 +52,17 @@ export const Input = ({
         </label>
       )}
 
-      <input
-        {...props}
-        id={id}
-        className={`${baseStyles} ${variants[variant]} ${className}`}
-        aria-invalid={variant === "error"}
-        aria-describedby={errorMessage ? `${id}-error` : undefined}
-      />
-
+      <div className="relative">
+        {startIcon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{startIcon}</div>}
+        <input
+          {...props}
+          id={id}
+          className={`${baseStyles} ${variants[variant]} ${className}`}
+          aria-invalid={variant === "error"}
+          aria-describedby={errorMessage ? `${id}-error` : undefined}
+        />
+        {endIcon && <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{endIcon}</div> }
+      </div>
       {errorMessage && (
         <p id={`${id}-error`} className="text-xs text-red-500 mt-0.5">
           {errorMessage}
