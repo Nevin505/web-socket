@@ -202,6 +202,26 @@ const ChatPage = () => {
               [data.groupId]: [...currentMsgs, incomingMessage],
             };
           });
+        } else if (data.type === 'confirmation' && data.groupId) {
+          // Sender confirmation: reconcile optimistic message with database ID & timestamp
+          setMessages((prev) => {
+            const currentMsgs = prev[data.groupId] || [];
+            const targetId = data.clientMsgId || data.id;
+            const updated = currentMsgs.map((m) => {
+              if (m.clientMsgId === targetId || m.id === targetId) {
+                return {
+                  ...m,
+                  id: data.id,
+                  createdAt: data.createdAt || m.createdAt,
+                };
+              }
+              return m;
+            });
+            return {
+              ...prev,
+              [data.groupId]: updated,
+            };
+          });
         }
       } catch (err) {
         console.error("Failed to parse incoming WS message", err);

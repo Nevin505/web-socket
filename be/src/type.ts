@@ -1,11 +1,12 @@
 export type WsMessage = {
-    type: 'join' | 'broadcast' | 'leave';
+    type: 'join' | 'broadcast' | 'leave' | 'confirmation';
     groupId: string;
-    sentBy: string;
-    content: string;
-    clientMsgId: string;
-    createdAt: string;
-    id: string;
-    conversationId: string;
-    senderName: string;
-}
+    sentBy?: string;
+    content?: string;
+    clientMsgId?: string;
+    createdAt?: string;
+    id?: string;
+    conversationId?: string;
+    senderName?: string;
+    status?: 'sent' | 'delivered';
+};

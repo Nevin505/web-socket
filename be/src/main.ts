@@ -61,12 +61,12 @@ const leaveRoom = (groupId: string, ws: WebSocket) => {
 
 
 }
-const broadcast = (groupId: string, payload: any) => {
+const broadcast = (groupId: string, payload: any, excludeWs?: WebSocket) => {
   const ws = rooms.get(groupId);
   console.log("groupId", ws)
   if (ws) {
     for (const singleSocket of ws) {
-      if (singleSocket.readyState === WebSocket.OPEN) {
+      if (singleSocket !== excludeWs && singleSocket.readyState === WebSocket.OPEN) {
         console.log("sending", payload)
         singleSocket.send(JSON.stringify({ ...payload }));
       }
@@ -139,6 +139,7 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
             clientMsgId: data.id || data.clientMsgId,
           });
 
+          // Broadcast to everyone in group EXCEPT the sender
           broadcast(data.groupId, {
             type: "broadcast",
             id: savedMessage.id,
@@ -149,11 +150,29 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
             sentBy: savedMessage.sentById,
             senderName: savedMessage.sentByUser?.name,
             createdAt: savedMessage.createdAt.toISOString(),
-          });
+          }, ws);
+
+          // Send confirmation directly to the sender
+          ws.send(JSON.stringify({
+            type: "confirmation",
+            status: "delivered",
+            id: savedMessage.id,
+            clientMsgId: savedMessage.clientMsgId || data.id,
+            groupId: data.groupId,
+            createdAt: savedMessage.createdAt.toISOString(),
+          }));
         } catch (dbErr: any) {
           console.error("Database saveMessage error:", dbErr.message);
-          // Fallback to broadcasting in-memory message so client remains responsive
-          broadcast(data.groupId, { ...data, sentBy: senderId });
+          // Fallback to broadcasting in-memory message to others, and confirm to sender
+          broadcast(data.groupId, { ...data, sentBy: senderId }, ws);
+          ws.send(JSON.stringify({
+            type: "confirmation",
+            status: "delivered",
+            id: data.id || crypto.randomUUID(),
+            clientMsgId: data.id || data.clientMsgId,
+            groupId: data.groupId,
+            createdAt: new Date().toISOString(),
+          }));
         }
       } else if (data.type === 'join') {
         joinRoom(ws, data.groupId);

@@ -1,0 +1,49 @@
+services:
+  web:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./fe:/app
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3000/api/v1/ws
+    depends_on:
+      - api
+    networks:
+      - ws-network
+  api:
+    build:
+      context: ./be
+      dockerfile: dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./be:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres?schema=public
+      - JWT_SECRET=secret
+      - JWT_EXPIRES=2d
+      - CLERK_SECRET_KEY=secret
+    depends_on:
+      - db
+    networks:
+      - ws-network
+  db:
+    image: postgres:15-alpine
+    container_name: ws-db
+    ports:
+      - "5431:5432"
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    networks:
+      - ws-network
+networks:
+  ws-network:
+    driver: bridge
