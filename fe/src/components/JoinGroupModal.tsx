@@ -66,7 +66,7 @@ export const JoinGroupModal = ({
   };
 
   const customHeader = (
-    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
+    <div className="bg-gradient-to-r from-primary to-secondary p-6 text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-md shadow-inner">
@@ -74,13 +74,13 @@ export const JoinGroupModal = ({
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight">Join a Group</h2>
-            <p className="text-xs text-emerald-100">Enter an invitation code or link</p>
+            <p className="text-xs text-primary-100">Enter an invitation code or link</p>
           </div>
         </div>
 
         <button
           onClick={handleClose}
-          className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white focus:outline-none"
+          className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white focus:outline-none cursor-pointer"
           aria-label="Close dialog"
         >
           <CloseIcon className="h-5 w-5" />
@@ -98,7 +98,7 @@ export const JoinGroupModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="invite-input" className="block text-sm font-semibold text-gray-800 mb-1.5">
+          <label htmlFor="invite-input" className="block text-xs font-semibold text-slate-300 mb-1.5">
             Invite Link or Code
           </label>
           <textarea
@@ -108,19 +108,19 @@ export const JoinGroupModal = ({
             placeholder="Paste invite link (e.g. http://localhost:5173/invite/...) or code"
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 p-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 font-mono"
+            className="w-full rounded-xl border border-dark-input-border bg-dark-input p-3 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 font-mono resize-none"
           />
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-3 text-xs text-red-300">
             {error}
           </div>
         )}
 
         {successMsg && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800 flex items-center gap-2">
-            <CheckIcon className="h-4 w-4 text-emerald-600" />
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs font-semibold text-emerald-300 flex items-center gap-2">
+            <CheckIcon className="h-4 w-4 text-emerald-400" />
             {successMsg}
           </div>
         )}
@@ -137,7 +137,6 @@ export const JoinGroupModal = ({
             type="submit"
             disabled={loading || !inputVal.trim()}
             loading={loading}
-            variant="success"
           >
             Join Group
           </Button>

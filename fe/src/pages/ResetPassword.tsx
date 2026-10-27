@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button, Input } from "../components/ui";
 import { verifyResetToken, resetPassword } from "../api/auth";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaLock, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import BrandHeader from "../components/BrandHeader";
 import axios from "axios";
 
 export const ResetPassword = () => {
@@ -117,19 +118,23 @@ export const ResetPassword = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        {/* State: Password successfully reset */}
+    <div className="pulse-bg relative flex min-h-screen items-center justify-center p-4">
+      {/* Top Header */}
+      <BrandHeader />
+
+      {/* Main Card */}
+      <div className="pulse-glass-card relative z-10 w-full max-w-[440px] rounded-3xl p-8 sm:p-10 my-16 shadow-2xl">
+        {/* State 1: Reset Success */}
         {resetSuccess ? (
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-3xl text-emerald-600">
-              ✓
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/20 text-3xl text-emerald-400 border border-emerald-500/30">
+              <FaCheckCircle />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Password reset complete!
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Your password has been updated successfully. You can now sign in with your new credentials.
+            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+              Your password has been updated securely. You can now sign in with your new credentials.
             </p>
 
             <div className="mt-8">
@@ -143,59 +148,60 @@ export const ResetPassword = () => {
                     },
                   })
                 }
+                className="py-3.5"
               >
                 Proceed to Sign in →
               </Button>
             </div>
           </div>
         ) : verifying ? (
-          /* State: Verifying token on initial load */
+          /* State 2: Verifying token */
           <div className="py-8 text-center">
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-            <h2 className="text-lg font-semibold text-gray-800">
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            <h2 className="text-base font-semibold text-white">
               Verifying reset link...
             </h2>
-            <p className="mt-1 text-xs text-gray-500">
-              Please wait while we validate your token.
+            <p className="mt-1 text-xs text-slate-400">
+              Validating your security token
             </p>
           </div>
         ) : tokenValid === false ? (
-          /* State: Token is invalid or expired */
+          /* State 3: Invalid token */
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-2xl text-red-600">
-              ⚠️
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/20 text-2xl text-red-400 border border-red-500/30">
+              <FaExclamationTriangle />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Invalid or Expired Link
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
               {verifyError ||
                 "This password reset link is invalid or has already expired."}
             </p>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="mt-7 flex flex-col gap-3">
               <Link to="/forgot-password">
-                <Button>Request a new reset link</Button>
+                <Button className="py-3.5">Request a new reset link</Button>
               </Link>
               <Link
                 to="/"
-                className="text-sm font-semibold text-gray-600 hover:text-gray-900"
+                className="text-xs font-semibold text-slate-400 transition-colors hover:text-white"
               >
                 ← Back to sign in
               </Link>
             </div>
           </div>
         ) : !token ? (
-          /* State: No token provided in URL - allow manual entry */
+          /* State 4: Manual token entry */
           <div>
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600">
-              🔐
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-secondary pulse-icon-halo text-white">
+              <FaLock className="text-xl" />
             </div>
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
                 Reset Password
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-xs text-slate-400">
                 Please enter the reset token received in your email.
               </p>
             </div>
@@ -205,44 +211,44 @@ export const ResetPassword = () => {
                 id="manual-token"
                 label="Reset Token"
                 type="text"
-                placeholder="Paste your reset token here"
+                placeholder="Paste token here"
                 required
                 value={manualTokenInput}
                 onChange={(e) => setManualTokenInput(e.target.value)}
               />
-              <Button type="submit">Verify Token</Button>
+              <Button type="submit" className="py-3.5">Verify Token</Button>
             </form>
 
             <div className="mt-6 text-center">
               <Link
                 to="/forgot-password"
-                className="text-xs font-semibold text-blue-600 hover:underline"
+                className="text-xs font-semibold text-primary transition-colors hover:text-primary-400 hover:underline"
               >
                 Need a new reset link? Click here
               </Link>
             </div>
           </div>
         ) : (
-          /* State: Token is valid - show new password form */
+          /* State 5: Token valid -> New password form */
           <div>
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600">
-              🔒
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-secondary pulse-icon-halo text-white">
+              <FaLock className="text-xl" />
             </div>
 
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
                 Create new password
               </h1>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1.5 text-xs text-slate-400">
                 {userInfo?.email ? (
                   <>
                     Resetting password for{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-slate-200">
                       {userInfo.email}
                     </span>
                   </>
                 ) : (
-                  "Your new password must be at least 8 characters long."
+                  "Choose a strong password of at least 8 characters."
                 )}
               </p>
             </div>
@@ -257,18 +263,19 @@ export const ResetPassword = () => {
                   autoComplete="new-password"
                   minLength={8}
                   required
+                  startIcon={<FaLock className="text-xs text-slate-400" />}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   endIcon={
                     showPassword ? (
                       <FaEyeSlash
                         onClick={() => setShowPassword(false)}
-                        className="cursor-pointer text-gray-500 hover:text-gray-700"
+                        className="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
                       />
                     ) : (
                       <FaEye
                         onClick={() => setShowPassword(true)}
-                        className="cursor-pointer text-gray-500 hover:text-gray-700"
+                        className="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
                       />
                     )
                   }
@@ -284,18 +291,19 @@ export const ResetPassword = () => {
                   autoComplete="new-password"
                   minLength={8}
                   required
+                  startIcon={<FaLock className="text-xs text-slate-400" />}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   endIcon={
                     showConfirmPassword ? (
                       <FaEyeSlash
                         onClick={() => setShowConfirmPassword(false)}
-                        className="cursor-pointer text-gray-500 hover:text-gray-700"
+                        className="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
                       />
                     ) : (
                       <FaEye
                         onClick={() => setShowConfirmPassword(true)}
-                        className="cursor-pointer text-gray-500 hover:text-gray-700"
+                        className="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
                       />
                     )
                   }
@@ -303,10 +311,10 @@ export const ResetPassword = () => {
               </div>
 
               {/* Password checks helper */}
-              <div className="rounded-xl bg-gray-50 p-3 text-xs text-gray-600 space-y-1">
+              <div className="rounded-xl border border-dark-input-border bg-dark-input/60 p-3 text-xs text-slate-400 space-y-1">
                 <div
                   className={`flex items-center gap-1.5 ${
-                    password.length >= 8 ? "text-emerald-600 font-medium" : "text-gray-500"
+                    password.length >= 8 ? "text-emerald-400 font-medium" : "text-slate-500"
                   }`}
                 >
                   <span>{password.length >= 8 ? "✓" : "○"}</span>
@@ -315,8 +323,8 @@ export const ResetPassword = () => {
                 <div
                   className={`flex items-center gap-1.5 ${
                     confirmPassword && password === confirmPassword
-                      ? "text-emerald-600 font-medium"
-                      : "text-gray-500"
+                      ? "text-emerald-400 font-medium"
+                      : "text-slate-500"
                   }`}
                 >
                   <span>
@@ -329,21 +337,21 @@ export const ResetPassword = () => {
               {formError && (
                 <div
                   role="alert"
-                  className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+                  className="rounded-xl border border-red-500/30 bg-red-950/30 p-2.5 text-center text-xs text-red-400"
                 >
                   {formError}
                 </div>
               )}
 
-              <Button type="submit" disabled={submitting}>
-                {submitting ? "Resetting password..." : "Reset password"}
+              <Button type="submit" disabled={submitting} className="mt-2 py-3.5">
+                {submitting ? "Resetting password..." : "Reset Password →"}
               </Button>
             </form>
 
-            <div className="mt-6 border-t border-gray-100 pt-4 text-center">
+            <div className="mt-6 border-t border-slate-800/80 pt-4 text-center">
               <Link
                 to="/"
-                className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                className="text-xs font-semibold text-slate-400 transition-colors hover:text-white"
               >
                 ← Back to sign in
               </Link>

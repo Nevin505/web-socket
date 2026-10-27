@@ -72,18 +72,25 @@ const ChatPage = () => {
 
   // Transform groups into conversations
   const groupConversations: Conversation[] = useMemo(() => {
-    return groups.map((g) => ({
-      id: g.id,
-      name: g.name,
-      lastMessage: "Group created. Start messaging!",
-      time: new Date(g.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }),
-      unread: 0,
-      isGroup: true,
-      memberCount: g.memberCount || g.members?.length || 1,
-      maxMembers: g.maxMembers,
-      currentUserRole: g.currentUserRole,
-      createdById: g.createdById,
-    }));
+    return groups.map((g) => {
+      const d = new Date(g.createdAt);
+      const timeStr = !isNaN(d.getTime())
+        ? `${d.getDate()} ${d.toLocaleString("en-US", { month: "short" })}`
+        : "26 Oct";
+
+      return {
+        id: g.id,
+        name: g.name,
+        lastMessage: "Group created. Start messaging!",
+        time: timeStr,
+        unread: 0,
+        isGroup: true,
+        memberCount: g.memberCount || g.members?.length || 1,
+        maxMembers: g.maxMembers,
+        currentUserRole: g.currentUserRole || "MEMBER",
+        createdById: g.createdById,
+      };
+    });
   }, [groups]);
 
   const allConversations = groupConversations;
@@ -283,52 +290,56 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
-      {/* Sidebar with Group Actions */}
-      <Sidebar
-        conversations={allConversations}
-        activeId={activeId}
-        onSelect={joinGroup}
-        userName={currentUserName}
-        onCreateGroup={() => setIsCreateOpen(true)}
-        onJoinGroup={() => setIsJoinOpen(true)}
-        className={activeId ? "hidden md:flex" : "flex"}
-      />
+    <div className="flex h-screen w-full items-center justify-center bg-[#070b13] p-0 md:p-3 lg:p-4 text-slate-100">
+      <div className="flex h-full w-full overflow-hidden rounded-none md:rounded-2xl border-0 md:border md:border-indigo-500/40 shadow-[0_0_50px_rgba(124,58,237,0.18)] bg-[#090d16]">
+        {/* Sidebar with Group Actions */}
+        <Sidebar
+          conversations={allConversations}
+          activeId={activeId}
+          onSelect={joinGroup}
+          userName={currentUserName}
+          userEmail={user?.email}
+          onCreateGroup={() => setIsCreateOpen(true)}
+          onJoinGroup={() => setIsJoinOpen(true)}
+          className={activeId ? "hidden md:flex" : "flex"}
+        />
 
-      {/* Main Chat Area */}
-      <ChatWindow
-        conversation={activeConversation}
-        messages={activeId ? messages[activeId] ?? [] : []}
-        currentUserId={currentUserId}
-        onSend={handleSend}
-        onBack={() => setActiveId(null)}
-        onInvite={handleOpenInvite}
-        onSendMessage={sendMessage}
-        className={activeId ? "flex" : "hidden md:flex"}
-      />
+        {/* Main Chat Area */}
+        <ChatWindow
+          conversation={activeConversation}
+          messages={activeId ? messages[activeId] ?? [] : []}
+          currentUserId={currentUserId}
+          onSend={handleSend}
+          onBack={() => setActiveId(null)}
+          onInvite={handleOpenInvite}
+          onCreateGroup={() => setIsCreateOpen(true)}
+          onSendMessage={sendMessage}
+          className={activeId ? "flex" : "hidden md:flex"}
+        />
 
-      {/* Create Group Modal */}
-      <CreateGroupModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onGroupCreated={handleGroupCreated}
-      />
+        {/* Create Group Modal */}
+        <CreateGroupModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onGroupCreated={handleGroupCreated}
+        />
 
-      {/* Invite Modal */}
-      <InviteModal
-        isOpen={isInviteOpen}
-        onClose={() => setIsInviteOpen(false)}
-        group={selectedGroupForInvite}
-        availableGroups={groups}
-        onSelectGroup={setSelectedGroupForInvite}
-      />
+        {/* Invite Modal */}
+        <InviteModal
+          isOpen={isInviteOpen}
+          onClose={() => setIsInviteOpen(false)}
+          group={selectedGroupForInvite}
+          availableGroups={groups}
+          onSelectGroup={setSelectedGroupForInvite}
+        />
 
-      {/* Join Group Modal */}
-      <JoinGroupModal
-        isOpen={isJoinOpen}
-        onClose={() => setIsJoinOpen(false)}
-        onJoined={handleGroupJoined}
-      />
+        {/* Join Group Modal */}
+        <JoinGroupModal
+          isOpen={isJoinOpen}
+          onClose={() => setIsJoinOpen(false)}
+          onJoined={handleGroupJoined}
+        />
+      </div>
     </div>
   );
 };

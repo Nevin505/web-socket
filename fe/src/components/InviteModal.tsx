@@ -106,7 +106,7 @@ export const InviteModal = ({
     : "";
 
   const customHeader = (
-    <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 p-6 text-white">
+    <div className="bg-gradient-to-r from-primary to-secondary p-6 text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-md shadow-inner">
@@ -114,7 +114,7 @@ export const InviteModal = ({
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight">Invite to Group</h2>
-            <p className="text-xs text-blue-100">
+            <p className="text-xs text-primary-100">
               {currentGroup ? currentGroup.name : "Select a group to create an invite"}
             </p>
           </div>
@@ -122,7 +122,7 @@ export const InviteModal = ({
 
         <button
           onClick={onClose}
-          className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white focus:outline-none"
+          className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white focus:outline-none cursor-pointer"
           aria-label="Close dialog"
         >
           <CloseIcon className="h-5 w-5" />
@@ -130,7 +130,7 @@ export const InviteModal = ({
       </div>
 
       {availableGroups.length > 1 && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-black/15 p-2 text-xs">
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-black/25 p-2 text-xs border border-white/10">
           <span className="font-medium text-white/80">Target Group:</span>
           <select
             value={currentGroup?.id ?? ""}
@@ -140,10 +140,10 @@ export const InviteModal = ({
               if (onSelectGroup && grp) onSelectGroup(grp);
               setInvitation(null);
             }}
-            className="rounded-lg bg-white/20 px-2 py-1 text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-white"
+            className="rounded-lg bg-black/40 px-2 py-1 text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-primary-400 border border-white/10"
           >
             {availableGroups.map((g) => (
-              <option key={g.id} value={g.id} className="text-gray-900">
+              <option key={g.id} value={g.id} className="bg-slate-900 text-white">
                 {g.name}
               </option>
             ))}
@@ -161,14 +161,14 @@ export const InviteModal = ({
       headerCustom={customHeader}
     >
       {/* Tab Switcher */}
-      <div className="-mx-6 -mt-6 flex border-b border-gray-100 bg-gray-50/50 px-6 pt-3 mb-6">
+      <div className="-mx-6 -mt-6 flex border-b border-dark-card-border bg-[#0f1524] px-6 pt-3 mb-6">
         <button
           type="button"
           onClick={() => setActiveTab("link")}
-          className={`flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "link"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-800"
+              ? "border-primary text-primary-400"
+              : "border-transparent text-slate-400 hover:text-white"
           }`}
         >
           <LinkIcon className="h-4 w-4" />
@@ -177,10 +177,10 @@ export const InviteModal = ({
         <button
           type="button"
           onClick={() => setActiveTab("email")}
-          className={`ml-6 flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-all ${
+          className={`ml-6 flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "email"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-800"
+              ? "border-primary text-primary-400"
+              : "border-transparent text-slate-400 hover:text-white"
           }`}
         >
           <MailIcon className="h-4 w-4" />
@@ -189,7 +189,7 @@ export const InviteModal = ({
       </div>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-950/40 p-3 text-xs text-red-300">
           {error}
         </div>
       )}
@@ -198,16 +198,16 @@ export const InviteModal = ({
         /* Share Link View */
         <div className="space-y-5">
           {!invitation ? (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 mb-3">
+            <div className="rounded-2xl border border-dashed border-dark-card-border bg-dark-input/40 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary mb-3">
                 <LinkIcon className="h-6 w-6" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-white">
                 Generate an Instant Invite Link
               </h3>
-              <p className="mt-1 text-xs text-gray-500 max-w-sm mx-auto">
+              <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
                 Anyone with this link can accept the invitation and instantly join{" "}
-                <span className="font-medium text-gray-800">
+                <span className="font-medium text-slate-200">
                   {currentGroup?.name || "your group"}
                 </span>
                 .
@@ -216,7 +216,7 @@ export const InviteModal = ({
                 type="button"
                 disabled={loading || !currentGroup}
                 onClick={() => handleGenerateLink()}
-                className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-primary/25 transition-all hover:brightness-110 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? "Generating Link..." : "Generate Invite Link"}
               </button>
@@ -225,7 +225,7 @@ export const InviteModal = ({
             /* Generated Link Card */
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Shareable URL
                 </label>
                 <div className="flex items-center gap-2">
@@ -233,15 +233,15 @@ export const InviteModal = ({
                     type="text"
                     readOnly
                     value={invitation.link}
-                    className="w-full truncate rounded-xl border border-gray-300 bg-gray-50 px-3.5 py-2.5 text-xs text-gray-800 font-mono focus:outline-none"
+                    className="w-full truncate rounded-xl border border-dark-input-border bg-dark-input px-3.5 py-2.5 text-xs text-slate-200 font-mono focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => copyToClipboard(invitation.link, "link")}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all ${
+                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer ${
                       copiedLink
-                        ? "bg-emerald-600 shadow-emerald-200"
-                        : "bg-blue-600 hover:bg-blue-700"
+                        ? "bg-emerald-600 shadow-emerald-900/40"
+                        : "bg-primary hover:brightness-110"
                     }`}
                   >
                     {copiedLink ? (
@@ -260,32 +260,32 @@ export const InviteModal = ({
               </div>
 
               {/* Raw Invite Code box */}
-              <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-3.5 flex items-center justify-between">
+              <div className="rounded-xl border border-dark-card-border bg-dark-input/60 p-3.5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-gray-700">Invite Code</p>
-                  <p className="font-mono text-xs text-gray-500 truncate max-w-[220px]">
+                  <p className="text-xs font-semibold text-slate-300">Invite Code</p>
+                  <p className="font-mono text-xs text-slate-400 truncate max-w-[220px]">
                     {invitation.token}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(invitation.token, "token")}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                  className="text-xs font-medium text-primary-400 hover:text-primary-300 cursor-pointer"
                 >
                   {copiedToken ? "✓ Copied" : "Copy Code"}
                 </button>
               </div>
 
               {/* Expiry badge */}
-              <div className="flex items-center justify-between text-xs text-gray-500 px-1">
-                <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 rounded-full px-2.5 py-0.5 font-medium">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+                <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-0.5 font-medium">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Valid for 7 days
                 </span>
                 <button
                   type="button"
                   onClick={() => handleGenerateLink()}
-                  className="font-medium text-blue-600 hover:underline"
+                  className="font-medium text-primary-400 hover:underline cursor-pointer"
                 >
                   Regenerate
                 </button>
@@ -297,7 +297,7 @@ export const InviteModal = ({
                   href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-dark-input-border bg-dark-input py-2 text-xs font-semibold text-slate-200 hover:bg-dark-input-hover hover:text-white shadow-sm"
                 >
                   💬 WhatsApp
                 </a>
@@ -305,7 +305,7 @@ export const InviteModal = ({
                   href={`mailto:?subject=${encodeURIComponent(
                     `Invite to join ${currentGroup?.name || "group"}`
                   )}&body=${encodeURIComponent(shareText)}`}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-dark-input-border bg-dark-input py-2 text-xs font-semibold text-slate-200 hover:bg-dark-input-hover hover:text-white shadow-sm"
                 >
                   ✉️ Email
                 </a>
@@ -317,7 +317,7 @@ export const InviteModal = ({
         /* Email Invite View */
         <form onSubmit={handleEmailSubmit} className="space-y-4">
           <div>
-            <label htmlFor="invite-email" className="block text-sm font-semibold text-gray-800 mb-1.5">
+            <label htmlFor="invite-email" className="block text-xs font-semibold text-slate-300 mb-1.5">
               Invitee Email Address
             </label>
             <Input
@@ -328,7 +328,7 @@ export const InviteModal = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-slate-400">
               An invitation token will be generated specifically for this email.
             </p>
           </div>
@@ -343,10 +343,10 @@ export const InviteModal = ({
           </Button>
 
           {invitation && (
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-3">
+            <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4 text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckIcon className="h-4 w-4 text-emerald-400" />
                   {invitation.emailSent
                     ? `Invitation email sent to ${invitation.email}!`
                     : `Invite created for ${invitation.email}`}
@@ -354,20 +354,20 @@ export const InviteModal = ({
                 <button
                   type="button"
                   onClick={() => copyToClipboard(invitation.link, "link")}
-                  className="text-xs font-semibold text-emerald-700 hover:underline"
+                  className="text-xs font-semibold text-emerald-400 hover:underline cursor-pointer"
                 >
                   {copiedLink ? "✓ Copied!" : "Copy Link"}
                 </button>
               </div>
 
               {invitation.emailPreviewUrl && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50/80 p-2.5 text-xs text-blue-800 flex items-center justify-between">
+                <div className="rounded-lg border border-blue-500/30 bg-blue-950/30 p-2.5 text-xs text-blue-300 flex items-center justify-between">
                   <span>✉️ Dev Preview:</span>
                   <a
                     href={invitation.emailPreviewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-blue-600 underline hover:text-blue-800"
+                    className="font-semibold text-blue-400 underline hover:text-blue-300"
                   >
                     Open Sent Email ↗
                   </a>
@@ -378,7 +378,7 @@ export const InviteModal = ({
                 type="text"
                 readOnly
                 value={invitation.link}
-                className="w-full rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs text-gray-800 font-mono"
+                className="w-full rounded-lg border border-dark-input-border bg-dark-input px-3 py-1.5 text-xs text-slate-200 font-mono"
               />
             </div>
           )}
@@ -386,7 +386,7 @@ export const InviteModal = ({
       )}
 
       {/* Footer action */}
-      <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
+      <div className="mt-6 flex justify-end border-t border-dark-card-border pt-4">
         <Button
           type="button"
           variant="ghost"

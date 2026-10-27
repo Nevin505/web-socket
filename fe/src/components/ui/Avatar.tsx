@@ -2,9 +2,10 @@ export interface AvatarProps {
   name: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  status?: "online" | "offline" | "busy";
 }
 
-export const Avatar = ({ name, size = "md", className = "" }: AvatarProps) => {
+export const Avatar = ({ name, size = "md", className = "", status }: AvatarProps) => {
   const initials = (name || "U")
     .split(" ")
     .filter(Boolean)
@@ -21,10 +22,15 @@ export const Avatar = ({ name, size = "md", className = "" }: AvatarProps) => {
   };
 
   return (
-    <div
-      className={`flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-100 to-indigo-100 font-bold text-blue-700 shadow-sm ${sizes[size]} ${className}`}
-    >
-      {initials || "U"}
+    <div className="relative inline-flex shrink-0">
+      <div
+        className={`flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-secondary font-bold text-white shadow-md shadow-primary/20 ${sizes[size]} ${className}`}
+      >
+        {initials || "U"}
+      </div>
+      {status === "online" && (
+        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-dark-card" />
+      )}
     </div>
   );
 };

@@ -98,30 +98,30 @@ export const Modal = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
         aria-hidden="true"
       />
 
       {/* Modal Dialog Content */}
       <div
         ref={modalRef}
-        className={`relative w-full ${SIZE_CLASSES[size]} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all animate-in zoom-in-95 duration-200 ${className}`}
+        className={`relative w-full ${SIZE_CLASSES[size]} overflow-hidden rounded-3xl bg-[#131929] border border-dark-card-border text-white shadow-2xl ring-1 ring-white/10 transition-all animate-in zoom-in-95 duration-200 ${className}`}
       >
         {/* Custom Header or Default Header */}
         {headerCustom ? (
           headerCustom
         ) : title ? (
           <div
-            className={`flex items-center justify-between border-b border-gray-100 px-6 py-4 ${headerClassName}`}
+            className={`flex items-center justify-between border-b border-dark-card-border px-6 py-4 ${headerClassName}`}
           >
             <div className="flex items-center gap-3">
               {icon && <div className="shrink-0">{icon}</div>}
               <div>
-                <h2 className="text-lg font-bold text-gray-900 leading-tight">
+                <h2 className="text-lg font-bold text-white leading-tight">
                   {title}
                 </h2>
                 {description && (
-                  <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{description}</p>
                 )}
               </div>
             </div>
@@ -130,7 +130,7 @@ export const Modal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors focus:outline-none"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors focus:outline-none cursor-pointer"
                 aria-label="Close dialog"
               >
                 <CloseIcon className="h-5 w-5" />
@@ -144,7 +144,7 @@ export const Modal = ({
 
         {/* Optional Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-3.5">
+          <div className="flex items-center justify-end gap-3 border-t border-dark-card-border bg-[#0f1524] px-6 py-3.5">
             {footer}
           </div>
         )}

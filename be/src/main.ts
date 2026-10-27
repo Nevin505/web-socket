@@ -10,6 +10,7 @@ import { saveMessage } from "./modules/message/message.service";
 import { WebSocketServer, WebSocket } from 'ws'
 import http from 'http'
 import jwt, { type JwtPayload } from "jsonwebtoken";
+import { WsMessage } from "./type";
 
 interface AuthenticatedWebSocket extends WebSocket {
   userId?: string;
@@ -67,7 +68,7 @@ const broadcast = (groupId: string, payload: any) => {
     for (const singleSocket of ws) {
       if (singleSocket.readyState === WebSocket.OPEN) {
         console.log("sending", payload)
-        singleSocket.send(JSON.stringify({...payload}));
+        singleSocket.send(JSON.stringify({ ...payload }));
       }
     }
 
@@ -116,16 +117,16 @@ const authenticateWebSocket = (
     return false;
   }
 };
-
+// {"type":"broadcast","id":"cmvpzlr4x0001iebtmig96cua","clientMsgId":"689f23e5-2e61-45f3-a321-55a74e315a50","content":"rteyhrtyrt","groupId":"cmvpfge5s0005djbtvmhgf5ml","conversationId":"cmvpfge5k0003djbtmlit0ir2","sentBy":"cmvpffuna0002djbtd1dol0gh","senderName":"Mevin Zach","createdAt":"2026-10-27T01:08:38.433Z"}
 webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => {
   if (!authenticateWebSocket(ws, req)) {
     return;
   }
 
-  ws.on("message", async (message: { type: 'join' | 'broadcast' | 'leave', groupId: string, sentBy: string, message: string }) => {
+  ws.on("message", async (message) => {
     console.log("Received message:", message);
     try {
-      const data = JSON.parse(message.toString());
+      const data: WsMessage = JSON.parse(message.toString());
       console.log("the messafge recived", data);
       const senderId = ws.userId || data.sentBy;
 
