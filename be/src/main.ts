@@ -73,7 +73,10 @@ const broadcast = (groupId: string, payload: any) => {
 
   }
 }
-webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => {
+const authenticateWebSocket = (
+  ws: AuthenticatedWebSocket,
+  req: http.IncomingMessage
+): boolean => {
   const url = new URL(req.url || "", `http://${req.headers.host || "localhost"}`);
   const token = url.searchParams.get("token");
 
@@ -81,34 +84,41 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
   if (!secret) {
     console.error("JWT_SECRET is not configured");
     ws.close(1011, "Internal server error");
-    return;
+    return false;
   }
 
   if (!token) {
     console.log("WebSocket rejected: No token provided in query params");
     ws.close(4001, "Authentication token required");
-    return;
+    return false;
   }
 
   try {
     const decoded = jwt.verify(token, secret) as JwtPayload | string;
     if (!decoded || typeof decoded === "string") {
       ws.close(4001, "Invalid token");
-      return;
+      return false;
     }
 
     const userId = (decoded as JwtPayload).id || (decoded as JwtPayload).sub;
     if (!userId || typeof userId !== "string") {
       ws.close(4001, "Invalid token payload");
-      return;
+      return false;
     }
 
     ws.userId = userId;
     userSockets.set(userId, ws);
     console.log(`User connected via WebSocket: ${userId}`);
+    return true;
   } catch (err) {
     console.log("WebSocket authentication failed:", err);
     ws.close(4001, "Authentication failed");
+    return false;
+  }
+};
+
+webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => {
+  if (!authenticateWebSocket(ws, req)) {
     return;
   }
 
