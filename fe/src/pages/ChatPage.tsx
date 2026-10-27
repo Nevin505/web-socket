@@ -147,7 +147,13 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn("No auth token found; skipping WebSocket connection");
+      return;
+    }
+
+    const ws = new WebSocket(`ws://localhost:8080?token=${encodeURIComponent(token)}`);
     setWs(ws);
     ws.onopen = () => {
       console.log("Connected to server");
@@ -194,8 +200,8 @@ const ChatPage = () => {
         console.error("Failed to parse incoming WS message", err);
       }
     };
-    ws.onclose = () => {
-      console.log("Disconnected from server");
+    ws.onclose = (event) => {
+      console.log("Disconnected from server", event.code, event.reason);
     };
 
     return () => {

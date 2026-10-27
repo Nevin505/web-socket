@@ -26,6 +26,7 @@ export interface PasswordResetEmailParams {
 export interface SendEmailResult {
   success: boolean;
   messageId?: string;
+  previewUrl?: string | false;
   error?: string;
 }
 
