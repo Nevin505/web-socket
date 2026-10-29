@@ -11,14 +11,23 @@ import { WebSocketServer, WebSocket } from 'ws'
 import http from 'http'
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { WsMessage } from "./type";
+import { createClient } from "redis";
+import { randomUUID } from "crypto";
 
 interface AuthenticatedWebSocket extends WebSocket {
   userId?: string;
+  socketId?: string;   // add this
 }
 
+const pub = createClient({
+  url: process.env.REDIS_URL
+})
+const sub = pub.duplicate()
+
+pub.on("error", (err) => console.error("Redis pub error:", err));
+sub.on("error", (err) => console.error("Redis sub error:", err));
 const app = express();
-const rooms = new Map<string, Set<WebSocket>>();   // groupId -> sockets
-const userSockets = new Map<string, WebSocket>(); // socket -> user info
+
 const httpServer = http.createServer(app);
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json());
@@ -37,42 +46,61 @@ app.use("/invite", inviteRouter);
 app.use("/api/messages", messageRouter);
 app.use("/messages", messageRouter);
 
+const rooms = new Map<string, Set<AuthenticatedWebSocket>>();   // groupId -> sockets
+const userSockets = new Map<string, AuthenticatedWebSocket>(); // socket -> user info
+
 
 const webSocketServer = new WebSocketServer({ server: httpServer });
-const joinRoom = (ws: WebSocket, groupId: string) => {
+
+const channelFor = (groupId: string) => `group:${groupId}`;
+
+const joinRoom = async (ws: AuthenticatedWebSocket, groupId: string) => {
   let set = rooms.get(groupId);
   if (set) {
     set.add(ws)
   } else {
-    const newWs = new Set<WebSocket>();
+    const newWs = new Set<AuthenticatedWebSocket>();
     newWs.add(ws);
     rooms.set(groupId, newWs);
-
+    await sub.subscribe(channelFor(groupId), (message: string) => {
+      const { excludeSocketId, ...payload } = JSON.parse(message) as {
+        excludeSocketId?: string;
+        [key: string]: any;
+      };
+      const webServers = rooms.get(groupId);
+      if (webServers) {
+        for (const singleSocket of webServers) {
+          if (singleSocket.socketId !== excludeSocketId && singleSocket.readyState === WebSocket.OPEN) {
+            singleSocket.send(JSON.stringify({ ...payload }));
+          }
+        }
+      }
+    });
   }
   console.log("the ws", rooms.get(groupId)?.size)
 }
-const leaveRoom = (groupId: string, ws: WebSocket) => {
+const leaveRoom = async (groupId: string, ws: AuthenticatedWebSocket) => {
   const webServers = rooms.get(groupId);
   if (!webServers) return;
-  if (webServers) {
-    webServers.delete(ws);
+  webServers.delete(ws);
+  if (webServers.size === 0) {
+    rooms.delete(groupId);
+    await sub.unsubscribe(channelFor(groupId));
   }
-  if (webServers.size === 0) rooms.delete(groupId);
-
-
 }
-const broadcast = (groupId: string, payload: any, excludeWs?: WebSocket) => {
-  const ws = rooms.get(groupId);
-  console.log("groupId", ws)
-  if (ws) {
-    for (const singleSocket of ws) {
-      if (singleSocket !== excludeWs && singleSocket.readyState === WebSocket.OPEN) {
-        console.log("sending", payload)
-        singleSocket.send(JSON.stringify({ ...payload }));
-      }
-    }
+const broadcast = async (groupId: string, payload: any, excludeWs?: AuthenticatedWebSocket) => {
+  // const ws = rooms.get(groupId);
+  // console.log("groupId", ws)
+  // if (ws) {
+  //   for (const singleSocket of ws) {
+  //     if (singleSocket !== excludeWs && singleSocket.readyState === WebSocket.OPEN) {
+  //       console.log("sending", payload)
+  //       singleSocket.send(JSON.stringify({ ...payload }));
+  //     }
+  //   }
 
-  }
+  // }
+  await pub.publish(channelFor(groupId), JSON.stringify({ ...payload, excludeSocketId: excludeWs?.socketId }))
 }
 const authenticateWebSocket = (
   ws: AuthenticatedWebSocket,
@@ -119,6 +147,8 @@ const authenticateWebSocket = (
 };
 // {"type":"broadcast","id":"cmvpzlr4x0001iebtmig96cua","clientMsgId":"689f23e5-2e61-45f3-a321-55a74e315a50","content":"rteyhrtyrt","groupId":"cmvpfge5s0005djbtvmhgf5ml","conversationId":"cmvpfge5k0003djbtmlit0ir2","sentBy":"cmvpffuna0002djbtd1dol0gh","senderName":"Mevin Zach","createdAt":"2026-10-27T01:08:38.433Z"}
 webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => {
+  console.log("calledd")
+  ws.socketId = randomUUID();
   if (!authenticateWebSocket(ws, req)) {
     return;
   }
@@ -131,6 +161,9 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
       const senderId = ws.userId || data.sentBy;
 
       if (data.type === "broadcast") {
+        if (!data.content || !senderId) {
+          return;
+        }
         try {
           const savedMessage = await saveMessage({
             content: data.content,
@@ -140,7 +173,7 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
           });
 
           // Broadcast to everyone in group EXCEPT the sender
-          broadcast(data.groupId, {
+          await broadcast(data.groupId, {
             type: "broadcast",
             id: savedMessage.id,
             clientMsgId: savedMessage.clientMsgId,
@@ -164,7 +197,7 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
         } catch (dbErr: any) {
           console.error("Database saveMessage error:", dbErr.message);
           // Fallback to broadcasting in-memory message to others, and confirm to sender
-          broadcast(data.groupId, { ...data, sentBy: senderId }, ws);
+          await broadcast(data.groupId, { ...data, sentBy: senderId }, ws);
           ws.send(JSON.stringify({
             type: "confirmation",
             status: "delivered",
@@ -175,29 +208,41 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
           }));
         }
       } else if (data.type === 'join') {
-        joinRoom(ws, data.groupId);
+        await joinRoom(ws, data.groupId);
       } else if (data.type === 'leave') {
-        leaveRoom(data.groupId, ws);
+        await leaveRoom(data.groupId, ws);
       }
     } catch (parseErr) {
       console.error("Failed to parse websocket message:", parseErr);
     }
   });
 
-  ws.on('close', () => {
+  ws.on('close', async() => {
     console.log(`User disconnected: ${ws.userId || "unknown"}`);
     if (ws.userId && userSockets.get(ws.userId) === ws) {
       userSockets.delete(ws.userId);
     }
-    for (const [groupId, socketSet] of rooms.entries()) {
-      socketSet.delete(ws);
-      if (socketSet.size === 0) rooms.delete(groupId);
+    for (const groupId of [...rooms.keys()]) {
+      await leaveRoom(groupId, ws);
     }
   });
 });
-httpServer.listen(process.env.PORT, () => {
-  console.log(`Server running on portas ${process.env.PORT}`);
+
+
+async function start() {
+  await Promise.all([pub.connect(), sub.connect()]);
+  console.log("Redis connected");
+
+  httpServer.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
+
 
 export default app;
 
