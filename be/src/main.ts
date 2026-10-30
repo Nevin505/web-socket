@@ -148,6 +148,7 @@ const authenticateWebSocket = (
 // {"type":"broadcast","id":"cmvpzlr4x0001iebtmig96cua","clientMsgId":"689f23e5-2e61-45f3-a321-55a74e315a50","content":"rteyhrtyrt","groupId":"cmvpfge5s0005djbtvmhgf5ml","conversationId":"cmvpfge5k0003djbtmlit0ir2","sentBy":"cmvpffuna0002djbtd1dol0gh","senderName":"Mevin Zach","createdAt":"2026-10-27T01:08:38.433Z"}
 webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => {
   console.log("calledd")
+  // console.log("")
   ws.socketId = randomUUID();
   if (!authenticateWebSocket(ws, req)) {
     return;
@@ -164,6 +165,7 @@ webSocketServer.on("connection", (ws: AuthenticatedWebSocket, req: http.Incoming
         if (!data.content || !senderId) {
           return;
         }
+        console.log("cionwsg here",data.content)
         try {
           const savedMessage = await saveMessage({
             content: data.content,
