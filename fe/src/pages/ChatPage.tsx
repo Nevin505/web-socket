@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
@@ -20,7 +20,7 @@ const ChatPage = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [groups, setGroups] = useState<Group[]>([]);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -160,12 +160,12 @@ const ChatPage = () => {
       return;
     }
 
-    const ws = new WebSocket(`ws://localhost:8080?token=${encodeURIComponent(token)}`);
-    setWs(ws);
-    ws.onopen = () => {
+    const socket = new WebSocket(`ws://localhost:8080?token=${encodeURIComponent(token)}`);
+    wsRef.current = socket;
+    socket.onopen = () => {
       console.log("Connected to server");
     };
-    ws.onmessage = (event) => {
+    socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'broadcast' && data.groupId && data.content) {
@@ -227,12 +227,13 @@ const ChatPage = () => {
         console.error("Failed to parse incoming WS message", err);
       }
     };
-    ws.onclose = (event) => {
+    socket.onclose = (event) => {
       console.log("Disconnected from server", event.code, event.reason);
     };
 
     return () => {
-      ws.close();
+      socket.close();
+      wsRef.current = null;
     };
   }, []);
 
@@ -251,6 +252,7 @@ const ChatPage = () => {
     id?: string;
     createdAt?: string;
   }) => {
+    const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
     let data = {};
     if (type === 'join') {
