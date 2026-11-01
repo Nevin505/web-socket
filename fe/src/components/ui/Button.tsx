@@ -7,19 +7,22 @@ export type ButtonVariant =
   | "outline"
   | "danger"
   | "success"
-  | "ghost";
+  | "ghost"
+  | "soft";
 
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  fullWidth?: boolean;
   loading?: boolean;
 }
 
 export const Button = ({
   variant = "primary",
   size = "md",
+  fullWidth,
   loading = false,
   disabled,
   children,
@@ -27,8 +30,10 @@ export const Button = ({
   type = "button",
   ...props
 }: ButtonProps) => {
+  const isIcon = size === "icon" || size === "icon-sm";
+
   const baseStyles =
-    "inline-flex items-center justify-center rounded-xl font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
+    "inline-flex items-center justify-center font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
 
   const variants: Record<ButtonVariant, string> = {
     primary:
@@ -43,15 +48,27 @@ export const Button = ({
       "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500",
     ghost:
       "bg-transparent text-slate-400 hover:text-white hover:bg-white/5 focus:ring-slate-500",
+    soft:
+      "border border-primary/30 bg-primary/10 text-primary-300 hover:bg-primary/20 active:scale-[0.99] focus:ring-primary",
   };
 
   const sizes: Record<ButtonSize, string> = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-3 text-sm",
-    lg: "px-6 py-3.5 text-base",
+    xs: "px-2.5 py-1 text-xs rounded-lg gap-1",
+    sm: "px-3 py-1.5 text-xs rounded-xl gap-1.5",
+    md: "px-4 py-3 text-sm rounded-xl gap-2",
+    lg: "px-6 py-3.5 text-base rounded-xl gap-2",
+    icon: "h-10 w-10 p-0 rounded-xl",
+    "icon-sm": "h-8 w-8 p-0 rounded-lg",
   };
 
-  const widthClass = className.includes("w-") ? "" : "w-full";
+  let widthClass = "";
+  if (fullWidth === true) {
+    widthClass = "w-full";
+  } else if (fullWidth === false || isIcon) {
+    widthClass = "";
+  } else {
+    widthClass = className.includes("w-") ? "" : "w-full";
+  }
 
   return (
     <button
@@ -63,7 +80,7 @@ export const Button = ({
       {loading ? (
         <span className="inline-flex items-center gap-2">
           <SpinnerIcon className="h-4 w-4" />
-          Processing...
+          {!isIcon && <span>Processing...</span>}
         </span>
       ) : (
         children

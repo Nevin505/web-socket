@@ -235,14 +235,13 @@ export const InviteModal = ({
                     value={invitation.link}
                     className="w-full truncate rounded-xl border border-dark-input-border bg-dark-input px-3.5 py-2.5 text-xs text-slate-200 font-mono focus:outline-none"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant={copiedLink ? "success" : "primary"}
+                    size="sm"
+                    fullWidth={false}
                     onClick={() => copyToClipboard(invitation.link, "link")}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer ${
-                      copiedLink
-                        ? "bg-emerald-600 shadow-emerald-900/40"
-                        : "bg-primary hover:brightness-110"
-                    }`}
+                    className="shrink-0"
                   >
                     {copiedLink ? (
                       <>
@@ -255,7 +254,7 @@ export const InviteModal = ({
                         Copy Link
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -267,13 +266,16 @@ export const InviteModal = ({
                     {invitation.token}
                   </p>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="xs"
+                  fullWidth={false}
                   onClick={() => copyToClipboard(invitation.token, "token")}
-                  className="text-xs font-medium text-primary-400 hover:text-primary-300 cursor-pointer"
+                  className="text-primary-400 hover:text-primary-300 font-medium"
                 >
                   {copiedToken ? "✓ Copied" : "Copy Code"}
-                </button>
+                </Button>
               </div>
 
               {/* Expiry badge */}

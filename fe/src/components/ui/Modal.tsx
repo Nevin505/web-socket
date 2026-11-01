@@ -7,6 +7,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./icons";
+import { Button } from "./Button";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
 
@@ -127,14 +128,15 @@ export const Modal = ({
             </div>
 
             {showCloseButton && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={onClose}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors focus:outline-none cursor-pointer"
                 aria-label="Close dialog"
               >
                 <CloseIcon className="h-5 w-5" />
-              </button>
+              </Button>
             )}
           </div>
         ) : null}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Conversation, Message } from "../types/chat";
-import { Avatar, ChatBubbleIcon, UserPlusIcon } from "./ui";
+import { Avatar, Button, ChatBubbleIcon, UserPlusIcon } from "./ui";
 import { FaPaperPlane, FaUsers } from "react-icons/fa";
 
 interface ChatWindowProps {
@@ -70,25 +70,29 @@ const ChatWindow = ({
 
         <div className="mt-6 flex items-center gap-3">
           {onCreateGroup && (
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
+              fullWidth={false}
               onClick={onCreateGroup}
-              className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-primary/25 hover:brightness-110 transition-all cursor-pointer"
             >
               <span>+</span>
               <span>Create New Group</span>
-            </button>
+            </Button>
           )}
 
           {onInvite && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
+              fullWidth={false}
               onClick={onInvite}
-              className="flex items-center gap-2 rounded-xl border border-dark-input-border bg-dark-input px-4 py-2.5 text-xs font-medium text-slate-300 hover:bg-dark-input-hover transition-all cursor-pointer"
             >
               <FaUsers className="text-slate-400" />
               <span>Invite Friends</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -125,14 +129,16 @@ const ChatWindow = ({
       {/* Header */}
       <header className="flex items-center justify-between border-b border-slate-800/80 bg-[#0d121f] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-3 min-w-0">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onBack}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-white/5 hover:text-white md:hidden cursor-pointer"
+            className="md:hidden"
             aria-label="Back to chats"
           >
             ←
-          </button>
+          </Button>
 
           {conversation.isGroup ? (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-secondary font-bold text-white shadow-md shadow-primary/20 text-xs">
@@ -165,14 +171,16 @@ const ChatWindow = ({
         {/* Action button in header */}
         <div className="flex items-center gap-2">
           {conversation.isGroup && onInvite && (
-            <button
+            <Button
               type="button"
+              variant="soft"
+              size="sm"
+              fullWidth={false}
               onClick={onInvite}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary-300 transition-all hover:bg-primary/20 cursor-pointer"
             >
               <UserPlusIcon className="h-3.5 w-3.5" />
               <span>+ Invite</span>
-            </button>
+            </Button>
           )}
         </div>
       </header>
@@ -240,14 +248,16 @@ const ChatWindow = ({
             className="w-full rounded-xl border border-dark-input-border bg-dark-input px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/30"
           />
         </div>
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="icon"
           disabled={!text.trim()}
           title="Send message"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-secondary text-white shadow-md shadow-primary/25 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          aria-label="Send message"
         >
           <FaPaperPlane className="h-3.5 w-3.5" />
-        </button>
+        </Button>
       </form>
     </section>
   );

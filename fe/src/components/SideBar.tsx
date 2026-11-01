@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { Conversation } from "../types/chat";
-import { PlusIcon, LinkIcon, ChatBubbleIcon } from "./ui";
+import { PlusIcon, LinkIcon, ChatBubbleIcon, Button } from "./ui";
 import { FaCog, FaSearch } from "react-icons/fa";
 
 interface SidebarProps {
@@ -96,27 +96,31 @@ const Sidebar = ({
         <div className="flex items-center gap-1.5">
           {/* Quick Join Group Button */}
           {onJoinGroup && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="icon-sm"
               onClick={onJoinGroup}
               title="Join Group with Code / Link"
-              className="rounded-xl border border-dark-input-border bg-dark-input p-2 text-slate-400 transition-colors hover:bg-dark-input-hover hover:text-white cursor-pointer"
+              aria-label="Join Group with Code / Link"
             >
               <LinkIcon className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           )}
 
           {/* Quick Create Group Button */}
           {onCreateGroup && (
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
+              fullWidth={false}
               onClick={onCreateGroup}
               title="Create New Group"
-              className="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-primary/25 transition-all hover:brightness-110 cursor-pointer"
             >
               <PlusIcon className="h-3 w-3" />
               <span>New Group</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -195,13 +199,16 @@ const Sidebar = ({
             </div>
             <p className="text-sm font-semibold text-slate-300">No chats found</p>
             {onCreateGroup && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
+                fullWidth={false}
                 onClick={onCreateGroup}
-                className="mt-3 text-xs font-semibold text-primary hover:text-primary-400 hover:underline cursor-pointer"
+                className="mt-3 text-primary hover:text-primary-400"
               >
                 + Create your first group
-              </button>
+              </Button>
             )}
           </li>
         )}
