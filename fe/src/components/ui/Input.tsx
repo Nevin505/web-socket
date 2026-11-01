@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactElement } from "react";
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
 
 export type InputVariant =
   | "default"
@@ -12,11 +12,12 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   variant?: InputVariant;
   errorMessage?: string;
-  startIcon?: ReactElement;
-  endIcon?: ReactElement;
+  startIcon?: ReactNode;
+  endIcon?: ReactNode;
+  containerClassName?: string;
 }
 
-export const Input = ({
+export const Input = forwardRef<HTMLInputElement, InputProps>(({
   id,
   label,
   errorMessage,
@@ -24,8 +25,9 @@ export const Input = ({
   endIcon,
   variant = "default",
   className = "",
+  containerClassName = "",
   ...props
-}: InputProps) => {
+}, ref) => {
   const baseStyles =
     "w-full rounded-xl py-3 outline-none transition-all text-sm focus:ring-2";
 
@@ -45,7 +47,7 @@ export const Input = ({
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5 ${containerClassName}`}>
       {label && (
         <label
           htmlFor={id}
@@ -55,7 +57,7 @@ export const Input = ({
         </label>
       )}
 
-      <div className="relative flex items-center">
+      <div className="relative flex items-center w-full">
         {startIcon && (
           <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
             {startIcon}
@@ -63,6 +65,7 @@ export const Input = ({
         )}
         <input
           {...props}
+          ref={ref}
           id={id}
           className={`${baseStyles} ${startIcon ? "pl-10" : "px-4"} ${endIcon ? "pr-10" : "px-4"} ${variants[variant]} ${className}`}
           aria-invalid={variant === "error"}
@@ -81,6 +84,8 @@ export const Input = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;

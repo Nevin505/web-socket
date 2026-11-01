@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Conversation, Message } from "../types/chat";
-import { Avatar, Button, ChatBubbleIcon, UserPlusIcon } from "./ui";
+import { Avatar, Button, ChatBubbleIcon, UserPlusIcon, Input } from "./ui";
 import { FaPaperPlane, FaUsers } from "react-icons/fa";
 
 interface ChatWindowProps {
@@ -233,21 +233,20 @@ const ChatWindow = ({
         onSubmit={handleSubmit}
         className="flex items-center gap-3 border-t border-slate-800/80 bg-[#0d121f] p-3 sm:p-4"
       >
-        <div className="flex-1 min-w-0">
-          <input
-            id="message"
-            type="text"
-            placeholder={
-              conversation.isGroup
-                ? `Message in ${conversation.name}...`
-                : "Type a message..."
-            }
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            autoComplete="off"
-            className="w-full rounded-xl border border-dark-input-border bg-dark-input px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/30"
-          />
-        </div>
+        <Input
+          id="message"
+          type="text"
+          placeholder={
+            conversation.isGroup
+              ? `Message in ${conversation.name}...`
+              : "Type a message..."
+          }
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          autoComplete="off"
+          containerClassName="flex-1 min-w-0"
+          className="py-2.5"
+        />
         <Button
           type="submit"
           variant="primary"

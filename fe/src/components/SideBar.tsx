@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { Conversation } from "../types/chat";
-import { PlusIcon, LinkIcon, ChatBubbleIcon, Button } from "./ui";
+import { PlusIcon, LinkIcon, ChatBubbleIcon, Button, Input } from "./ui";
 import { FaCog, FaSearch } from "react-icons/fa";
 
 interface SidebarProps {
@@ -127,23 +127,21 @@ const Sidebar = ({
 
       {/* Search Bar with ⌘K badge */}
       <div className="p-3 pb-2">
-        <div className="relative flex items-center">
-          <span className="pointer-events-none absolute left-3 text-slate-500 text-xs">
-            <FaSearch />
-          </span>
-          <input
-            ref={searchInputRef}
-            id="search"
-            type="search"
-            placeholder="Search chats or groups..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-dark-input-border bg-dark-input py-2 pl-8 pr-11 text-xs text-white placeholder:text-slate-500 outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/30"
-          />
-          <kbd className="pointer-events-none absolute right-2.5 rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 text-[9px] font-medium text-slate-400">
-            ⌘K
-          </kbd>
-        </div>
+        <Input
+          ref={searchInputRef}
+          id="search"
+          type="search"
+          placeholder="Search chats or groups..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          startIcon={<FaSearch className="text-xs text-slate-500" />}
+          endIcon={
+            <kbd className="pointer-events-none rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 text-[9px] font-medium text-slate-400">
+              ⌘K
+            </kbd>
+          }
+          className="py-2 text-xs"
+        />
       </div>
 
       {/* Filter Tabs */}

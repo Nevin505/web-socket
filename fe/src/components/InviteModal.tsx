@@ -229,11 +229,12 @@ export const InviteModal = ({
                   Shareable URL
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
+                  <Input
                     type="text"
                     readOnly
                     value={invitation.link}
-                    className="w-full truncate rounded-xl border border-dark-input-border bg-dark-input px-3.5 py-2.5 text-xs text-slate-200 font-mono focus:outline-none"
+                    containerClassName="flex-1 min-w-0"
+                    className="truncate py-2 text-xs font-mono"
                   />
                   <Button
                     type="button"
@@ -376,11 +377,11 @@ export const InviteModal = ({
                 </div>
               )}
 
-              <input
+              <Input
                 type="text"
                 readOnly
                 value={invitation.link}
-                className="w-full rounded-lg border border-dark-input-border bg-dark-input px-3 py-1.5 text-xs text-slate-200 font-mono"
+                className="py-1.5 text-xs font-mono"
               />
             </div>
           )}

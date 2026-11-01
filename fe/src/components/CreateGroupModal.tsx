@@ -261,13 +261,14 @@ export const CreateGroupModal = ({
 
             {customLimit && (
               <div className="mt-2 flex items-center gap-2">
-                <input
+                <Input
                   type="number"
                   min={2}
                   max={100}
                   value={maxMembers}
                   onChange={(e) => setMaxMembers(Math.max(2, Math.min(100, Number(e.target.value) || 2)))}
-                  className="w-28 rounded-xl border border-dark-input-border bg-dark-input px-3 py-1.5 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
+                  containerClassName="w-28"
+                  className="py-1.5"
                 />
                 <span className="text-xs text-slate-400">members allowed</span>
               </div>
